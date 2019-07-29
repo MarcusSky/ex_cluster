@@ -1,21 +1,12 @@
 # ExCluster
 
-**TODO: Add description**
+### Terminal 1
+ERL_FLAGS="-name count1@127.0.0.1 -setcookie cookie" NODES="count2@127.0.0.1,count3@127.0.0.1" iex -S mix
 
-## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `ex_cluster` to your list of dependencies in `mix.exs`:
+### Terminal 2
+ERL_FLAGS="-name count2@127.0.0.1 -setcookie cookie" NODES="count1@127.0.0.1,count3@127.0.0.1" iex -S mix
 
-```elixir
-def deps do
-  [
-    {:ex_cluster, "~> 0.1.0"}
-  ]
-end
-```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/ex_cluster](https://hexdocs.pm/ex_cluster).
-
+### Terminal 3
+ERL_FLAGS="-name count3@127.0.0.1 -setcookie cookie" NODES="count2@127.0.0.1,count1@127.0.0.1" iex -S mix
