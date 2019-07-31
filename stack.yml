@@ -1,0 +1,7 @@
+version: '3.7'
+
+services:
+  demo:
+    image: "ex_cluster:latest"
+    deploy:
+      replicas: 3

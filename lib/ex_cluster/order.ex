@@ -3,8 +3,6 @@ defmodule ExCluster.Order do
   require Logger
 
   def test do
-    Horde.Supervisor.start_child(ExCluster.OrderSupervisor, {ExCluster.Order, "John"})
-    Horde.Supervisor.start_child(ExCluster.OrderSupervisor, {ExCluster.Order, "Karan"})
     ExCluster.Order.add("Karan", [2, 3])
     ExCluster.Order.add("John", [1, 2])
   end
@@ -33,7 +31,7 @@ defmodule ExCluster.Order do
   end
 
   defp via_tuple(customer) do
-    {:via, Horde.Registry, {ExCluster.Registry, customer}}
+    {:via, Horde.Registry, {ExCluster.HordeRegistry, customer}}
   end
 
   def init(customer) do
@@ -46,9 +44,14 @@ defmodule ExCluster.Order do
     {:noreply, {customer, order_contents}}
   end
 
-  def terminate(reason, {customer, order_contents}) do
-    ExCluster.StateHandoff.handoff(customer, order_contents)
-    :ok
+  def handle_info({:EXIT, _pid, {:name_conflict, state, _registry, _pid}}, state) do
+    Logger.info("Tried to start a process with the name: #{inspect state} that is already started.")
+    {:noreply, state}
+  end
+
+  def handle_info(message, state) do
+    Logger.info("Received: #{inspect message}")
+    {:noreply, state}
   end
 
   def handle_cast({:add, new_order_contents}, {customer, order_contents}) do
@@ -57,5 +60,10 @@ defmodule ExCluster.Order do
 
   def handle_call({:contents}, _from, state = {_, order_contents}) do
     {:reply, order_contents, state}
+  end
+
+  def terminate(reason, {customer, order_contents}) do
+    ExCluster.StateHandoff.handoff(customer, order_contents)
+    :ok
   end
 end
