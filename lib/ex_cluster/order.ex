@@ -1,5 +1,6 @@
 defmodule ExCluster.Order do
   use GenServer
+
   require Logger
 
   def test do
@@ -40,17 +41,26 @@ defmodule ExCluster.Order do
   end
 
   def handle_continue(:load_state, customer) do
-    order_contents = ExCluster.StateHandoff.pickup(customer)
-    {:noreply, {customer, order_contents}}
+    case ExCluster.StateHandoff.pickup(customer) do
+      nil ->
+        {:noreply, {customer, []}}
+
+      content ->
+        order_contents = deserialize_content(content)
+        {:noreply, {customer, order_contents}}
+    end
   end
 
-  def handle_info({:EXIT, _pid, {:name_conflict, state, _registry, _pid}}, state) do
-    Logger.info("Tried to start a process with the name: #{inspect state} that is already started.")
+  def handle_info({:EXIT, _pid, {:name_conflict, state, _registry, _horde_pid}}, state) do
+    Logger.info(
+      "Tried to start a process with the name: #{inspect(state)} that is already started."
+    )
+
     {:noreply, state}
   end
 
   def handle_info(message, state) do
-    Logger.info("Received: #{inspect message}")
+    Logger.info("Received: #{inspect(message)}")
     {:noreply, state}
   end
 
@@ -62,8 +72,11 @@ defmodule ExCluster.Order do
     {:reply, order_contents, state}
   end
 
-  def terminate(reason, {customer, order_contents}) do
-    ExCluster.StateHandoff.handoff(customer, order_contents)
+  def terminate(_reason, {customer, order_contents}) do
+    ExCluster.StateHandoff.handoff(customer, serialize_content(order_contents))
     :ok
   end
+
+  defp serialize_content(content), do: Jason.encode!(content)
+  defp deserialize_content(content), do: Jason.decode!(content)
 end
