@@ -36,4 +36,4 @@ WORKDIR /usr/local/ex_cluster
 
 COPY --from=builder /opt/release/ex_cluster .
 
-CMD trap 'exit' INT; ./bin/ex_cluster start
+CMD ./bin/ex_cluster start

@@ -43,9 +43,5 @@ defmodule ExCluster.ClusterConnector do
       ExCluster.HordeRegistry,
       Enum.map(nodes, fn n -> {ExCluster.HordeRegistry, n} end)
     )
-
-    # Enum.each(Node.list(), fn node ->
-    #   :ok = ExCluster.StateHandoff.join(node)
-    # end)
   end
 end
