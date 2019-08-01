@@ -18,4 +18,32 @@
 $ docker swarm init
 $ docker build -t ex_cluster .
 $ docker stack deploy -c stack.yml t_ex_cluster
+$ docker stack rm t_ex_cluster
+```
+
+## Debugging
+
+List all running containers
+
+```
+$ docker ps
+```
+
+Then start a remote iex
+
+```
+$ docker exec -it [container name] bin/ex_cluster remote
+```
+
+To see the logs run
+
+```
+$ docker logs --follow [container name]
+```
+
+## Orders
+
+```elixir
+ExCluster.Order.add("Guimas", [1,2,3])
+ExCluster.Order.contents("Guimas")
 ```
