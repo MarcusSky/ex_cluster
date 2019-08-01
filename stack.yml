@@ -1,6 +1,13 @@
-version: '3.7'
+version: "3.7"
 
 services:
+  redis:
+    image: "redis:5-alpine"
+    ports:
+      - "6379:6379"
+    deploy:
+      replicas: 1
+
   demo:
     image: "ex_cluster:latest"
     deploy:
