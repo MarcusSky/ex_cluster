@@ -35,13 +35,26 @@ defmodule ExCluster.StateHandoff do
 
   def handle_call({:pickup, key}, _from, state) do
     case Redix.command(ExCluster.Redix, ["GET", state_key(key)]) do
-      {:ok, content} ->
+      {:ok, content} when not is_nil(content) ->
         Logger.info("Picked up #{inspect(content, charlists: :as_lists)} for #{key}")
+        GenServer.cast(__MODULE__, {:remove, key})
         {:reply, content, state}
 
       _ ->
-        Logger.info("Error to pick up #{key}'s content")
-        {:reply, :error, state}
+        Logger.info("Did not find anything for #{key}, returning nil")
+        {:reply, nil, state}
+    end
+  end
+
+  def handle_cast({:remove, key}, state) do
+    case Redix.command(ExCluster.Redix, ["DEL", state_key(key)]) do
+      {:ok, _number_of_keys} ->
+        Logger.info("Removed #{inspect(key)} from storage")
+        {:noreply, state}
+
+      _ ->
+        Logger.info("Error when trying to remove \"#{key}\"")
+        {:noreply, state}
     end
   end
 

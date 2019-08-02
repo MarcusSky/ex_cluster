@@ -73,6 +73,7 @@ defmodule ExCluster.Order do
   end
 
   def terminate(_reason, {customer, order_contents}) do
+    Logger.info("Saving #{inspect(inspect(order_contents, charlists: :as_lists))}")
     ExCluster.StateHandoff.handoff(customer, serialize_content(order_contents))
     :ok
   end
