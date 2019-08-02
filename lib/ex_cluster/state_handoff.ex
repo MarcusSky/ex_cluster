@@ -48,6 +48,10 @@ defmodule ExCluster.StateHandoff do
 
   def handle_cast({:remove, key}, state) do
     case Redix.command(ExCluster.Redix, ["DEL", state_key(key)]) do
+      {:ok, 0} ->
+        Logger.info("Did not find #{inspect(key)} on storage")
+        {:noreply, state}
+
       {:ok, _number_of_keys} ->
         Logger.info("Removed #{inspect(key)} from storage")
         {:noreply, state}
